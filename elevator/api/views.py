@@ -33,7 +33,7 @@ def initialise(request):
     print(n)
     
     for i in range(0,n):
-        Elevator.objects.create(floor=0, doorStatus='Closed', motion='Stopped', operational=True)
+        Elevator.objects.create(currentFloor=0, doorStatus='Closed', motion='Stopped', operational=True)
     serializer = ElevatorSerializer(Elevator.objects.all(), many=True)
     
     return Response({"message": serializer.data})
@@ -254,11 +254,7 @@ def motion(request,pk):
 @api_view(['POST'])
 def deinitialise(request):
 
-    n = request.data['deleteElevators']
-    print(n)
+    Elevator.objects.all().delete()
     
-    for i in range(0,n):
-        Elevator.objects.delete()
-    serializer = ElevatorSerializer(Elevator.objects.all(), many=True)
     
-    return Response({"message": serializer.data})
+    return Response({"message": "All Elevators Deleted Please enter new number of elevators with initialise api"})

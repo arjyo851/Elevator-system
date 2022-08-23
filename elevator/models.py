@@ -1,4 +1,5 @@
 from django.db import models
+from django.contrib.postgres.fields import ArrayField
 
 # Create your models here.
 
@@ -8,5 +9,6 @@ class Elevator(models.Model):
     currentFloor = models.IntegerField()
     motion = models.CharField(max_length=7, choices=[('Moving', 'Moving'), ('Stopped', 'Stopped')])
     operational = models.BooleanField(default=True)
-    listofRequest = models.TextField(default='',blank=True, null=True)
+    listofRequest = ArrayField(models.IntegerField(blank=True), default=list)
+
 
