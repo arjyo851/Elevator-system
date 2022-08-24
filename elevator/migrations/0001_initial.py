@@ -14,7 +14,7 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name='Elevator',
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
+                ('id', models.BigAutoField(auto_created=True, primary_key=False, serialize=False, verbose_name='ID')),
                 ('direction', models.CharField(choices=[('Up', 'Up'), ('Down', 'Down')], max_length=4)),
                 ('doorStatus', models.CharField(choices=[('O', 'Open'), ('C', 'Closed')], max_length=1)),
                 ('floor', models.IntegerField()),

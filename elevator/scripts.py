@@ -7,15 +7,14 @@ import time
 
 def optimal(personFloor):
     
-    mini = float('inf')
+    mini = float('inf') #Int_max
     index = 0
     elevator = Elevator.objects.all()
-    # print(elevator)
     elevatorIndex = -100 #if the elevatorIndex stays negative then it means no elevator is available
     arr = []
+
     for elevator in elevator.iterator():
         serializer = ElevatorSerializer(instance=elevator)
-        print(elevator.motion)
         motion = serializer.data['motion']
 
         currentFloor = elevator.currentFloor
@@ -23,17 +22,18 @@ def optimal(personFloor):
         if(abs(currentFloor - personFloor) < mini and motion != "Moving" ):#[3,5,4,2,1] personFloor = 5
             mini = abs(currentFloor - personFloor)
             elevatorIndex  = index
-        index+=1
-    print(str(mini) + " diff")
-    print(elevatorIndex+arr[0])
+        index+=1 # index for each elevator
+    # print(str(mini) + " diff")
+    #elevatorIndex+arr[0] is the index of elevator + the beginning id of the elevator which can be six also 
     userElevatorIndex  = elevatorIndex+arr[0]
 
-    Elevator.objects.filter(id=userElevatorIndex).update(motion = "Moving")
+    # Elevator.objects.filter(id=userElevatorIndex).update(motion = "Moving")
 
     if elevatorIndex<0:
-        return "All elevators are busy. "
+        currentUserelevator.objects.update()
+        return "All elevators are busy. request after some time"
     currentUserelevator = Elevator.objects.get(id=userElevatorIndex)
-    traverse(currentUserelevator.listofRequest,currentUserelevator.currentFloor,userElevatorIndex)
+    # traverse(currentUserelevator.listofRequest,currentUserelevator.currentFloor,userElevatorIndex)
     return userElevatorIndex
 
 
@@ -67,7 +67,7 @@ def traverse(lift,current,id):
                     Elevator.objects.filter(id=id).update(motion = "Stopped")
                     lift.remove(current)
                     Elevator.objects.filter(id=id).update(listofRequest=lift) #not working
-                    print(lift)
+                    # print(lift)
                     break
                     
                 if(current < lift[0]):

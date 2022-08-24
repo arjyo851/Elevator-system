@@ -46,7 +46,7 @@ Post and Get
 /direction
 object:
 {
-    "listofRequest":5
+    "request":5
 }
 
 """
@@ -56,7 +56,10 @@ def lorequest(request,pk):
     elevator = Elevator.objects.get(id=pk)
     if request.method == 'POST':
         request = request.data['request']
-        elevator.listofRequest.append(request)
+        try:
+            elevator.listofRequest.append(request)
+        except:
+            elevator.listofRequest = [request]
         elevator.save()
         return Response({"message": "Request added"})
     else:
@@ -177,12 +180,10 @@ def door(request,pk):
 
 """
 7. Get Optimal Elevator id.
-/optimal
+/liftAssigner
 object:
-{
-    "buttonPressFloor":5
-}
-return 
+
+object
 {
     "person":[5,2,6,1,8] persons on which floor
 }
@@ -274,7 +275,7 @@ def runLift(request,pk):
 /deinitialize
 """
 
-@api_view(['POST'])
+@api_view(['GET'])
 def deinitialise(request):
 
     Elevator.objects.all().delete()
