@@ -11,10 +11,11 @@ def optimal(personFloor):
     index = 0
     elevator = Elevator.objects.all()
     # print(elevator)
-    elevatorIndex = -100
+    elevatorIndex = -100 #if the elevatorIndex stays negative then it means no elevator is available
     arr = []
     for elevator in elevator.iterator():
         serializer = ElevatorSerializer(instance=elevator)
+        print(elevator.motion)
         motion = serializer.data['motion']
 
         currentFloor = elevator.currentFloor
@@ -28,39 +29,47 @@ def optimal(personFloor):
     userElevatorIndex  = elevatorIndex+arr[0]
 
     Elevator.objects.filter(id=userElevatorIndex).update(motion = "Moving")
+
     if elevatorIndex<0:
-        return "All elevators are busy"
+        return "All elevators are busy. "
     currentUserelevator = Elevator.objects.get(id=userElevatorIndex)
     traverse(currentUserelevator.listofRequest,currentUserelevator.currentFloor,userElevatorIndex)
     return userElevatorIndex
 
 
-def increment(current):
+def increment(current,id):
     current+=1
     time.sleep(2)
-    print("Upward direction and floor number : ", current)
+    Elevator.objects.filter(id=id).update(currentFloor = current)
+ 
+    print("Upward direction and floor number: ", current)
+    return current
     
-def decrement(current):
+def decrement(current,id):
     current-=1
     time.sleep(2)
+    Elevator.objects.filter(id=id).update(currentFloor = current)
     print("Downward direction and floor number : ", current)
+    return current
+
 
 def traverse(lift,current,id):
-    lift = lift[1:-1].split(',')
-    lift = list(lift)
-    print(lift)
+    elevator = Elevator.objects.get(id=id)
     if lift:
         while(True):
             if lift:
-                if(current > int(lift[0])):
-                    decrement(current)
+              
+                if(current >lift[0]):
+                    current = decrement(current,id)
                     
-                if(str(current) in lift):
+                if(current == lift[0]):
                     print("Stop as we reached to floor number : ", current)
                     Elevator.objects.filter(id=id).update(motion = "Stopped")
-                    Elevator.objects.filter(id=id).update(currentFloor = current)
-                    lift.remove(str(current))
+                    lift.remove(current)
+                    Elevator.objects.filter(id=id).update(listofRequest=lift) #not working
+                    print(lift)
                     break
                     
-                if(current < int(lift[0])):
-                    increment(current)
+                if(current < lift[0]):
+                    current = increment(current,id)
+                    

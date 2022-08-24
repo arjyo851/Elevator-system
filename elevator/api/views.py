@@ -5,7 +5,7 @@ from rest_framework.decorators import api_view
 from elevator.models import Elevator
 from .serializers import ElevatorSerializer
 import time
-from elevator.scripts import optimal
+from elevator.scripts import optimal,traverse
 
 
 
@@ -33,7 +33,7 @@ def initialise(request):
     print(n)
     
     for i in range(0,n):
-        Elevator.objects.create(floor=0, doorStatus='Closed', motion='Stopped', operational=True)
+        Elevator.objects.create(currentFloor=0, doorStatus='Closed', motion='Stopped', operational=True)
     serializer = ElevatorSerializer(Elevator.objects.all(), many=True)
     
     return Response({"message": serializer.data})
@@ -46,7 +46,7 @@ Post and Get
 /direction
 object:
 {
-    "listofRequest":"[1,8,10,4,6]"
+    "listofRequest":5
 }
 
 """
@@ -55,11 +55,10 @@ object:
 def lorequest(request,pk):
     elevator = Elevator.objects.get(id=pk)
     if request.method == 'POST':
-        serializer = ElevatorSerializer(instance=elevator, data=request.data,partial=True)# set partial=True to update a data partially
-        if serializer.is_valid():
-                serializer.save()
-                return Response(data=serializer.data)
-        return Response(data="wrong parameters")
+        request = request.data['request']
+        elevator.listofRequest.append(request)
+        elevator.save()
+        return Response({"message": "Request added"})
     else:
         serializer = ElevatorSerializer(instance=elevator)
 
@@ -85,10 +84,10 @@ def nextfloor(request,pk):
     serializer = ElevatorSerializer(instance=elevator)
     operational = serializer.data['operational']
     listofRequest = serializer.data['listofRequest']
-    listofRequest = listofRequest[1:-1].split(',')
-    li = list(listofRequest)
+    # listofRequest = listofRequest[1:-1].split(',')
+    # li = list(listofRequest)
     if operational == True:
-        return Response(data=li[0])
+        return Response(data=listofRequest[0])
     else:
         return Response(data="Elevator is not operational")
 
@@ -105,12 +104,12 @@ def direction(request,pk):
     serializer = ElevatorSerializer(instance=elevator)
     currentFloor = serializer.data['currentFloor']
     listofRequest = serializer.data['listofRequest']
-    listofRequest = listofRequest[1:-1].split(',')
-    li = list(listofRequest)
+    # listofRequest = listofRequest[1:-1].split(',')
+    # li = list(listofRequest)
     if serializer.data['operational'] == True:
-        if(int(li[0]) > currentFloor):
+        if(int(listofRequest[0]) > currentFloor):
             return Response(data='Up')
-        elif (int(li[0]) < currentFloor):
+        elif (int(listofRequest[0]) < currentFloor):
             return Response(data='Down')
         else :
             Elevator.objects.filter(id=pk).update(motion="Stopped")
@@ -163,12 +162,13 @@ def door(request,pk):
     elevator = Elevator.objects.get(id=pk)
     if request.method == 'POST':
         serializer = ElevatorSerializer(instance=elevator, data=request.data,partial=True)# set partial=True to update a data partially
-        if serializer.data["motion"] == "Stopped":
+        print(elevator.motion)
+        if elevator.motion == "Stopped":
             if serializer.is_valid():
                 serializer.save()
                 return Response(data=serializer.data)
-        elif serializer.data["motion"] == "Moving" and serializer.data["doorStatus"] == "Closed":
-            return Response(data="Elevator is moving cannot open ")
+        elif elevator.motion == "Moving" and elevator.doorStatus == "Closed":
+            return Response(data="Elevator is moving cannot open please close doors")
     else:
         elevator = Elevator.objects.get(id=pk)
         serializer = ElevatorSerializer(instance=elevator)
@@ -247,18 +247,37 @@ def motion(request,pk):
 
 
 """
-10. Deinitialize Elevator.
+10 Run the lift
+/runLift
+"""
+
+@api_view(['GET'])
+def runLift(request,pk):
+    elevator = Elevator.objects.get(id=pk)
+    # serializer = ElevatorSerializer(instance=elevator)
+    operational = elevator.operational
+    listofRequest = elevator.listofRequest
+    current = elevator.currentFloor
+    if operational == True:
+        if len(listofRequest) == 0:
+            return Response(data="No Requests")
+        else:
+            Elevator.objects.filter(id=pk).update(motion="Moving")
+            traverse(listofRequest,current,pk)
+            return Response(data="Elevator has stopped")
+    else:
+        return Response(data="Elevator is not operational")
+
+
+"""
+11. Deinitialize Elevator.
 /deinitialize
 """
 
 @api_view(['POST'])
 def deinitialise(request):
 
-    n = request.data['deleteElevators']
-    print(n)
+    Elevator.objects.all().delete()
     
-    for i in range(0,n):
-        Elevator.objects.delete()
-    serializer = ElevatorSerializer(Elevator.objects.all(), many=True)
     
-    return Response({"message": serializer.data})
+    return Response({"message": "All Elevators Deleted Please enter new number of elevators with initialise api"})
