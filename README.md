@@ -14,7 +14,8 @@ Documentation below.
 In `settings.py` in DATABASES please input your own Id and password for the database and create a database in your pgAdmin panel.
 
 ## Make a virtual enviroment
-
+   
+    Recommended python version -----> 3.9.X (The LATEST STABLE RELEASE)
     python -m venv myvenv
 
 ## Run the virtual enviroment
@@ -93,14 +94,14 @@ The REST API to the  app is described below.
 ----------------------------------------------------------------------------------------------------------------------------
 
 ## List of Request
-Request a floor for the elevetor to travel to.
+Request a floor for a particular elevetor to travel to.
 
 ### POST Request
 
 `POST /listofrequests/:id` 
 
      {
-         "listofRequest":5
+         "listofRequest":4
      }
      
 ### Response
@@ -113,7 +114,7 @@ Request a floor for the elevetor to travel to.
 
 ### Response
 
-    [5,  8]
+    [5,  8, 4]
     
 -------------------------------------------------------------------------------------------------------------------------------   
 
@@ -131,6 +132,7 @@ Request a floor for the elevetor to travel to.
 ## Direction
 
 ### GET Request
+According to the current Floor of the elevator this api will show direction
 
 `GET /direction/:id`
 
@@ -211,6 +213,8 @@ Request a floor for the elevetor to travel to.
 ## Lift Assigner
 
 ### POST Request
+Request of floor number is listed. The nearest elevator is selected for each request.
+Both these data sets i.e request and nearest elevator are assigned in two different arrays in which each element has one 1-1 relationship
 
 `POST /liftAsssigner` 
 
